@@ -65,13 +65,17 @@ document.querySelectorAll('.product').forEach((product) => {
 
 // Iniciar AR
 function startAR() {
-    navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['hit-test'] }).then((session) => {
-        renderer.xr.setSession(session);
-        renderer.setAnimationLoop((frame) => {
-            detectSurface(frame);
-            renderer.render(scene, camera);
-        });
-    });
+    if (navigator.xr) {
+        navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['hit-test'] })
+            .then((session) => {
+                renderer.xr.setSession(session);
+                renderer.setAnimationLoop(render);
+            })
+            .catch((err) => console.error("Error al iniciar WebXR:", err));
+    } else {
+        alert("WebXR no es compatible con este dispositivo o navegador.");
+    }
 }
 
 document.getElementById('startAR').addEventListener('click', startAR);
+
