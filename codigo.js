@@ -16,51 +16,39 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
 scene.add(light);
 
-// Cargar modelos GLTF
+// Controlador de modelos
 const loader = new THREE.GLTFLoader();
 let currentModel = null;
 
+// Función para cargar modelos
 function loadModel(modelPath, position) {
     loader.load(`models/${modelPath}`, (gltf) => {
         if (currentModel) scene.remove(currentModel);
         currentModel = gltf.scene;
         currentModel.position.copy(position);
-        currentModel.scale.set(0.3, 0.3, 0.3); // Escala inicial
+        currentModel.scale.set(0.3, 0.3, 0.3);
         scene.add(currentModel);
     });
 }
 
-// Detección de superficies
+// Detectar superficies
 let hitTestSource = null;
-let hitTestSourceRequested = false;
-
-renderer.xr.addEventListener('sessionstart', () => {
-    const session = renderer.xr.getSession();
-    session.addEventListener('select', () => {
-        if (currentModel) {
-            currentModel.position.copy(hitPosition);
-        }
-    });
-});
-
-// Detectar superficies y colocar objetos
 let hitPosition = new THREE.Vector3();
+
 function detectSurface(frame) {
     const referenceSpace = renderer.xr.getReferenceSpace();
     const session = renderer.xr.getSession();
-    if (!hitTestSourceRequested) {
+    if (!hitTestSource) {
         session.requestHitTestSource({ space: referenceSpace }).then((source) => {
             hitTestSource = source;
         });
-        hitTestSourceRequested = true;
     }
     if (hitTestSource) {
         const viewerPose = frame.getViewerPose(referenceSpace);
         if (viewerPose) {
             const hitTestResults = frame.getHitTestResults(hitTestSource);
             if (hitTestResults.length > 0) {
-                const hit = hitTestResults[0];
-                const pose = hit.getPose(referenceSpace);
+                const pose = hitTestResults[0].getPose(referenceSpace);
                 hitPosition.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
             }
         }
@@ -75,22 +63,15 @@ document.querySelectorAll('.product').forEach((product) => {
     });
 });
 
-// Animación y renderizado
-function animate() {
-    renderer.setAnimationLoop((frame) => {
-        detectSurface(frame);
-        renderer.render(scene, camera);
-    });
-}
-animate();
-
-// Iniciar la sesión de AR
+// Iniciar AR
 function startAR() {
     navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['hit-test'] }).then((session) => {
         renderer.xr.setSession(session);
+        renderer.setAnimationLoop((frame) => {
+            detectSurface(frame);
+            renderer.render(scene, camera);
+        });
     });
 }
 
-// Comenzar la experiencia
-startAR();
-
+document.getElementById('startAR').addEventListener('click', startAR);
