@@ -37,8 +37,15 @@ body {
     background: #005bb5;
 }
 
-#arCanvas {
-    display: block;
-    width: 100vw;
-    height: 100vh;
+#instructions {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    z-index: 2;
 }
+
