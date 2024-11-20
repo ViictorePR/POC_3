@@ -41,81 +41,46 @@
         <button class="button" onclick="loadModel('jaguar.glb')">Jaguar</button>
     </div>
 
-    <!-- Escena de WebXR -->
-    <canvas id="arCanvas"></canvas>
+    <!-- Escena WebXR -->
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+        <!-- Cámara AR -->
+        <a-camera position="0 0 0"></a-camera>
 
-    <script src="https://cdn.jsdelivr.net/npm/three@0.131.3/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.131.3/examples/js/loaders/GLTFLoader.js"></script>
+        <!-- Contenedor de modelos -->
+        <a-entity id="modelContainer" position="0 0 0"></a-entity>
+    </a-scene>
+
+    <!-- Incluir librerías A-Frame y AR.js -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/2.1.0/aframe/build/aframe-ar.min.js"></script>
 
     <script>
-        let scene, camera, renderer;
-        let controller;
-        let model;
-
-        const sceneWidth = window.innerWidth;
-        const sceneHeight = window.innerHeight;
-
-        // Configuración inicial
-        function init() {
-            // Crear la escena de Three.js
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, sceneWidth / sceneHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("arCanvas") });
-            renderer.setSize(sceneWidth, sceneHeight);
-
-            // Configurar el WebXR para AR
-            if (navigator.xr) {
-                navigator.xr.requestSession("immersive-ar", {
-                    requiredFeatures: ["hit-test"],
-                }).then(onXRSessionStarted);
-            }
-        }
-
-        // Iniciar sesión de WebXR
-        function onXRSessionStarted(session) {
-            renderer.xr.enabled = true;
-            session.addEventListener("end", onXRSessionEnded);
-
-            // Solicitar el espacio de referencia para la superficie (suelo)
-            const referenceSpace = session.requestReferenceSpace("local-floor");
-            session.requestHitTestSource({ space: referenceSpace }).then(onHitTestSourceReceived);
-        }
-
-        // Terminar la sesión de WebXR
-        function onXRSessionEnded() {
-            console.log("Sesión de AR terminada");
-        }
-
-        // Manejar el hit-test (detección de superficies)
-        function onHitTestSourceReceived(hitTestSource) {
-            controller = new XRController(hitTestSource);
-            scene.add(controller);
-            animate();
-        }
-
-        // Cargar el modelo 3D seleccionado
+        // Función para cargar modelos 3D en la escena
         function loadModel(modelPath) {
-            if (model) {
-                scene.remove(model); // Eliminar modelo previo
-            }
+            const container = document.getElementById('modelContainer');
+            container.innerHTML = ''; // Limpiar cualquier modelo anterior
 
-            const loader = new THREE.GLTFLoader();
-            loader.load(`assets/${modelPath}`, function (gltf) {
-                model = gltf.scene;
-                model.scale.set(0.5, 0.5, 0.5);
-                model.position.set(0, 0, -1); // Colocarlo frente a la cámara
-                scene.add(model);
-            });
+            // Crear un nuevo modelo
+            const model = document.createElement('a-entity');
+            model.setAttribute('gltf-model', `assets/${modelPath}`);
+            model.setAttribute('scale', '0.5 0.5 0.5');
+            model.setAttribute('position', '0 0 0');
+
+            // Añadir el modelo al contenedor
+            container.appendChild(model);
         }
 
-        // Animación continua de la escena
-        function animate() {
-            renderer.setAnimationLoop(animate);
-            renderer.render(scene, camera);
+        // Solicitar permisos para la cámara
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    console.log("Permiso de cámara concedido");
+                }).catch(function (err) {
+                    alert("No se puede acceder a la cámara. Asegúrate de que el navegador permita el acceso a la cámara.");
+                });
+        } else {
+            alert("Tu navegador no soporta acceso a la cámara.");
         }
-
-        // Inicializar la escena
-        init();
     </script>
 </body>
 </html>
