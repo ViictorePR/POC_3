@@ -38,25 +38,27 @@
     <!-- Menú de selección -->
     <div id="menu">
         <h3>Selecciona un Producto</h3>
-        <button class="button" onclick="loadModel('assets/subaru.glb')">Subaru</button>
-        <button class="button" onclick="loadModel('assets/ferrari.glb')">Ferrari</button>
-        <button class="button" onclick="loadModel('assets/jaguar.glb')">Jaguar</button>
+        <button class="button" onclick="loadModel('subaru.glb')">Subaru</button>
+        <button class="button" onclick="loadModel('ferrari.glb')">Ferrari</button>
+        <button class="button" onclick="loadModel('jaguar.glb')">Jaguar</button>
     </div>
 
     <!-- Escena de A-Frame -->
     <a-scene embedded arjs>
         <!-- Marcador de AR.js -->
-        <a-marker-camera preset="hiro"></a-marker-camera>
-
-        <!-- Contenedor para modelos -->
-        <a-entity id="modelContainer"></a-entity>
+        <a-marker preset="hiro">
+            <!-- Contenedor para modelos -->
+            <a-entity id="modelContainer" position="0 0 0"></a-entity>
+        </a-marker>
+        <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-        // Cargar modelos dinámicamente en la escena
         function loadModel(modelPath) {
             const container = document.getElementById('modelContainer');
             container.innerHTML = ''; // Limpiar modelo anterior
+
+            console.log(`Cargando modelo: assets/${modelPath}`);
 
             // Crear un nuevo modelo
             const model = document.createElement('a-entity');
@@ -66,6 +68,15 @@
 
             // Añadir el modelo al contenedor
             container.appendChild(model);
+
+            // Depuración para verificar si el modelo se carga correctamente
+            model.addEventListener('model-loaded', () => {
+                console.log(`Modelo cargado correctamente: ${modelPath}`);
+            });
+
+            model.addEventListener('model-error', (error) => {
+                console.error(`Error al cargar el modelo:`, error);
+            });
         }
     </script>
 </body>
