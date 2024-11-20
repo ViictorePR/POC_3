@@ -45,11 +45,11 @@
 
     <!-- Escena de A-Frame -->
     <a-scene embedded arjs>
-        <!-- Cámara y detector de superficies -->
-        <a-camera position="0 0 0"></a-camera>
+        <!-- Marcador de AR.js -->
+        <a-marker-camera preset="hiro"></a-marker-camera>
 
         <!-- Contenedor para modelos -->
-        <a-entity id="modelContainer" position="0 0 0"></a-entity>
+        <a-entity id="modelContainer"></a-entity>
     </a-scene>
 
     <script>
@@ -57,10 +57,14 @@
         function loadModel(modelPath) {
             const container = document.getElementById('modelContainer');
             container.innerHTML = ''; // Limpiar modelo anterior
+
+            // Crear un nuevo modelo
             const model = document.createElement('a-entity');
             model.setAttribute('gltf-model', `assets/${modelPath}`);
             model.setAttribute('scale', '0.5 0.5 0.5');
             model.setAttribute('position', '0 0 0');
+
+            // Añadir el modelo al contenedor
             container.appendChild(model);
         }
     </script>
