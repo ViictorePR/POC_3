@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Productos RA - Sin Marcadores</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/3.3.2/aframe/build/aframe-ar.min.js"></script>
+    <title>Catálogo de Productos RA sin Marcadores</title>
     <style>
         body {
             margin: 0;
@@ -43,42 +41,72 @@
         <button class="button" onclick="loadModel('jaguar.glb')">Jaguar</button>
     </div>
 
-    <!-- Escena de A-Frame -->
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-        <!-- Plano de anclaje (coloca los objetos en el espacio) -->
-        <a-entity id="anchor" position="0 0 0">
-            <a-entity id="modelContainer" position="0 0 0"></a-entity>
-        </a-entity>
-        <!-- Cámara -->
-        <a-camera gps-camera rotation-reader></a-camera>
-    </a-scene>
+    <!-- Contenedor de WebXR -->
+    <canvas id="arCanvas"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.131.3/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@webxr/input-source@0.0.1/dist/webxr-input-source.min.js"></script>
 
     <script>
+        let scene, camera, renderer;
+        let controller;
+        let model;
+
+        const sceneWidth = window.innerWidth;
+        const sceneHeight = window.innerHeight;
+
+        // Inicia la escena
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, sceneWidth / sceneHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("arCanvas") });
+            renderer.setSize(sceneWidth, sceneHeight);
+
+            // Iniciar WebXR
+            if (navigator.xr) {
+                navigator.xr.requestSession("immersive-ar", { requiredFeatures: ["hit-test"] })
+                    .then(onXRSessionStarted);
+            }
+        }
+
+        // Configurar WebXR y la sesión de AR
+        function onXRSessionStarted(session) {
+            renderer.xr.enabled = true;
+            session.addEventListener("end", onXRSessionEnded);
+
+            const referenceSpace = session.requestReferenceSpace("local-floor");
+            session.requestHitTestSource({ space: referenceSpace }).then(onHitTestSourceReceived);
+        }
+
+        // Manejar el hit-test de la superficie
+        function onHitTestSourceReceived(hitTestSource) {
+            controller = new XRController(hitTestSource);
+            scene.add(controller);
+            animate();
+        }
+
+        // Cargar el modelo 3D en la escena
         function loadModel(modelPath) {
-            const container = document.getElementById('modelContainer');
-            container.innerHTML = ''; // Limpiar modelo anterior
+            if (model) {
+                scene.remove(model); // Limpiar el modelo previo
+            }
 
-            console.log(`Cargando modelo: assets/${modelPath}`);
-
-            // Crear el modelo y configurarlo
-            const model = document.createElement('a-entity');
-            model.setAttribute('gltf-model', `assets/${modelPath}`);
-            model.setAttribute('scale', '0.5 0.5 0.5');
-            model.setAttribute('position', '0 0 -3'); // Ajustar posición inicial
-            model.setAttribute('rotation', '0 0 0');
-
-            // Añadir el modelo al contenedor
-            container.appendChild(model);
-
-            // Depuración para saber si se carga correctamente
-            model.addEventListener('model-loaded', () => {
-                console.log(`Modelo cargado correctamente: ${modelPath}`);
-            });
-
-            model.addEventListener('model-error', (error) => {
-                console.error(`Error al cargar el modelo:`, error);
+            const loader = new THREE.GLTFLoader();
+            loader.load(`assets/${modelPath}`, function (gltf) {
+                model = gltf.scene;
+                model.scale.set(0.5, 0.5, 0.5);
+                scene.add(model);
             });
         }
+
+        // Animación continua
+        function animate() {
+            renderer.setAnimationLoop(animate);
+            renderer.render(scene, camera);
+        }
+
+        // Llamar a la inicialización
+        init();
     </script>
 </body>
 </html>
