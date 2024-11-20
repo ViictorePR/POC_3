@@ -41,16 +41,17 @@
         <button class="button" onclick="loadModel('jaguar.glb')">Jaguar</button>
     </div>
 
-    <!-- Escena WebXR -->
+    <!-- Escena de A-Frame con AR.js -->
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-        <!-- Cámara AR -->
-        <a-camera position="0 0 0"></a-camera>
+
+        <!-- Cámara de AR -->
+        <a-camera position="0 0 0" id="camera"></a-camera>
 
         <!-- Contenedor de modelos -->
         <a-entity id="modelContainer" position="0 0 0"></a-entity>
     </a-scene>
 
-    <!-- Incluir librerías A-Frame y AR.js -->
+    <!-- Librerías necesarias -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/2.1.0/aframe/build/aframe-ar.min.js"></script>
 
