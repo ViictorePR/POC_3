@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Productos RA</title>
+    <title>Catálogo de Productos RA - Sin Marcadores</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/2.1.0/aframe/build/aframe-ar.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/3.3.2/aframe/build/aframe-ar.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -44,13 +44,13 @@
     </div>
 
     <!-- Escena de A-Frame -->
-    <a-scene embedded arjs>
-        <!-- Marcador de AR.js -->
-        <a-marker preset="hiro">
-            <!-- Contenedor para modelos -->
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+        <!-- Plano de anclaje (coloca los objetos en el espacio) -->
+        <a-entity id="anchor" position="0 0 0">
             <a-entity id="modelContainer" position="0 0 0"></a-entity>
-        </a-marker>
-        <a-entity camera></a-entity>
+        </a-entity>
+        <!-- Cámara -->
+        <a-camera gps-camera rotation-reader></a-camera>
     </a-scene>
 
     <script>
@@ -60,16 +60,17 @@
 
             console.log(`Cargando modelo: assets/${modelPath}`);
 
-            // Crear un nuevo modelo
+            // Crear el modelo y configurarlo
             const model = document.createElement('a-entity');
             model.setAttribute('gltf-model', `assets/${modelPath}`);
             model.setAttribute('scale', '0.5 0.5 0.5');
-            model.setAttribute('position', '0 0 0');
+            model.setAttribute('position', '0 0 -3'); // Ajustar posición inicial
+            model.setAttribute('rotation', '0 0 0');
 
             // Añadir el modelo al contenedor
             container.appendChild(model);
 
-            // Depuración para verificar si el modelo se carga correctamente
+            // Depuración para saber si se carga correctamente
             model.addEventListener('model-loaded', () => {
                 console.log(`Modelo cargado correctamente: ${modelPath}`);
             });
