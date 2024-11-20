@@ -4,19 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo de Productos RA</title>
-    <link rel="stylesheet" href="estilo.css">
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/2.1.0/aframe/build/aframe-ar.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        #menu {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .button {
+            margin: 5px 0;
+            padding: 5px 10px;
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #005bb5;
+        }
+    </style>
 </head>
 <body>
+    <!-- Menú de selección -->
     <div id="menu">
-        <h2>Selecciona un producto</h2>
-        <div class="product" data-model="chair.gltf">Silla</div>
-        <div class="product" data-model="table.gltf">Mesa</div>
-        <div class="product" data-model="lamp.gltf">Lámpara</div>
+        <h3>Selecciona un Producto</h3>
+        <button class="button" onclick="loadModel('subaru.glb')">Subaru</button>
+        <button class="button" onclick="loadModel('ferrari.glb')">Ferrari</button>
+        <button class="button" onclick="loadModel('jaguar.glb')">Jaguar</button>
     </div>
-    <button id="startAR">Iniciar AR</button>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="codigo.js"></script>
+
+    <!-- Escena de A-Frame -->
+    <a-scene embedded arjs>
+        <!-- Cámara y detector de superficies -->
+        <a-camera position="0 0 0"></a-camera>
+
+        <!-- Contenedor para modelos -->
+        <a-entity id="modelContainer" position="0 0 0"></a-entity>
+    </a-scene>
+
+    <script>
+        // Cargar modelos dinámicamente en la escena
+        function loadModel(modelPath) {
+            const container = document.getElementById('modelContainer');
+            container.innerHTML = ''; // Limpiar modelo anterior
+            const model = document.createElement('a-entity');
+            model.setAttribute('gltf-model', `assets/${modelPath}`);
+            model.setAttribute('scale', '0.5 0.5 0.5');
+            model.setAttribute('position', '0 0 0');
+            container.appendChild(model);
+        }
+    </script>
 </body>
 </html>
-
