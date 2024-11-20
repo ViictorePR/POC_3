@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Productos RA sin Marcadores</title>
+    <title>Catálogo de Productos RA</title>
     <style>
         body {
             margin: 0;
@@ -41,11 +41,11 @@
         <button class="button" onclick="loadModel('jaguar.glb')">Jaguar</button>
     </div>
 
-    <!-- Contenedor de WebXR -->
+    <!-- Escena de WebXR -->
     <canvas id="arCanvas"></canvas>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.131.3/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@webxr/input-source@0.0.1/dist/webxr-input-source.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.131.3/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
         let scene, camera, renderer;
@@ -55,57 +55,66 @@
         const sceneWidth = window.innerWidth;
         const sceneHeight = window.innerHeight;
 
-        // Inicia la escena
+        // Configuración inicial
         function init() {
+            // Crear la escena de Three.js
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, sceneWidth / sceneHeight, 0.1, 1000);
             renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("arCanvas") });
             renderer.setSize(sceneWidth, sceneHeight);
 
-            // Iniciar WebXR
+            // Configurar el WebXR para AR
             if (navigator.xr) {
-                navigator.xr.requestSession("immersive-ar", { requiredFeatures: ["hit-test"] })
-                    .then(onXRSessionStarted);
+                navigator.xr.requestSession("immersive-ar", {
+                    requiredFeatures: ["hit-test"],
+                }).then(onXRSessionStarted);
             }
         }
 
-        // Configurar WebXR y la sesión de AR
+        // Iniciar sesión de WebXR
         function onXRSessionStarted(session) {
             renderer.xr.enabled = true;
             session.addEventListener("end", onXRSessionEnded);
 
+            // Solicitar el espacio de referencia para la superficie (suelo)
             const referenceSpace = session.requestReferenceSpace("local-floor");
             session.requestHitTestSource({ space: referenceSpace }).then(onHitTestSourceReceived);
         }
 
-        // Manejar el hit-test de la superficie
+        // Terminar la sesión de WebXR
+        function onXRSessionEnded() {
+            console.log("Sesión de AR terminada");
+        }
+
+        // Manejar el hit-test (detección de superficies)
         function onHitTestSourceReceived(hitTestSource) {
             controller = new XRController(hitTestSource);
             scene.add(controller);
             animate();
         }
 
-        // Cargar el modelo 3D en la escena
+        // Cargar el modelo 3D seleccionado
         function loadModel(modelPath) {
             if (model) {
-                scene.remove(model); // Limpiar el modelo previo
+                scene.remove(model); // Eliminar modelo previo
             }
 
             const loader = new THREE.GLTFLoader();
             loader.load(`assets/${modelPath}`, function (gltf) {
                 model = gltf.scene;
                 model.scale.set(0.5, 0.5, 0.5);
+                model.position.set(0, 0, -1); // Colocarlo frente a la cámara
                 scene.add(model);
             });
         }
 
-        // Animación continua
+        // Animación continua de la escena
         function animate() {
             renderer.setAnimationLoop(animate);
             renderer.render(scene, camera);
         }
 
-        // Llamar a la inicialización
+        // Inicializar la escena
         init();
     </script>
 </body>
